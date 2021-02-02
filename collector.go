@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/spf13/cobra"
 	"os"
 
 	"github.com/spf13/viper"
@@ -73,7 +74,7 @@ func (ipp *InProcessCollector) start() error {
 			// Version:  version.Version,
 			// GitHash:  version.GitHash,
 		},
-		ConfigFactory: func(v *viper.Viper, factories component.Factories) (*configmodels.Config, error) {
+		ConfigFactory: func(v *viper.Viper, cmd *cobra.Command, factories component.Factories) (*configmodels.Config, error) {
 			return ipp.config, nil
 		},
 		Factories: ipp.factories,
@@ -110,7 +111,7 @@ func (ipp *InProcessCollector) start() error {
 func (ipp *InProcessCollector) stop() (stopped bool, err error) {
 	if !ipp.stopped {
 		ipp.stopped = true
-		ipp.svc.SignalTestComplete()
+		ipp.svc.Shutdown()
 	}
 	<-ipp.appDone
 	stopped = ipp.stopped

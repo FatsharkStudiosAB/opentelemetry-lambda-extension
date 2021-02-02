@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.opentelemetry.io/collector/component"
+	"go.opentelemetry.io/collector/component/componenterror"
+	"go.opentelemetry.io/collector/exporter/loggingexporter"
+	"go.opentelemetry.io/collector/receiver/otlpreceiver"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -11,7 +15,7 @@ import (
 
 	"github.com/open-telemetry/opentelemetry-lambda-extension/extension"
 
-	"go.opentelemetry.io/collector/service/defaultcomponents"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/elasticexporter"
 )
 
 var (
@@ -20,8 +24,46 @@ var (
 	printPrefix     = fmt.Sprintf("[%s]", extensionName)
 )
 
+func components() (component.Factories, error) {
+	var errs []error
+
+	extensions, err := component.MakeExtensionFactoryMap()
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	receivers, err := component.MakeReceiverFactoryMap(
+		otlpreceiver.NewFactory(),
+	)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	exporters, err := component.MakeExporterFactoryMap(
+		loggingexporter.NewFactory(),
+		elasticexporter.NewFactory(),
+	)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	processors, err := component.MakeProcessorFactoryMap()
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	factories := component.Factories{
+		Extensions: extensions,
+		Receivers:  receivers,
+		Processors: processors,
+		Exporters:  exporters,
+	}
+
+	return factories, componenterror.CombineErrors(errs)
+}
+
 func main() {
-	factories, _ := defaultcomponents.Components()
+	factories, _ := components()
 	collector := NewInProcessCollector(factories)
 	collector.prepareConfig()
 	collector.start()
