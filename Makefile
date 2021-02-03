@@ -1,4 +1,4 @@
-NAME=opentelemetry-lambda-extension-with-elasticexporter
+NAME=opentelemetry-lambda-extension-otlp-to-elastic
 REGIONS=eu-west-1
 GIT_HASH=$(shell git rev-parse --short HEAD)
 GO_EXEC=go
@@ -11,12 +11,12 @@ publish:
 	rm -f bin/*.zip
 	cd bin && zip -r $(GIT_HASH).zip extensions/
 	for region in $(REGIONS); do \
-		aws --region $$region s3 cp ./bin/$(GIT_HASH).zip s3://$(S3_BUCKET)-$$region/$(NAME)/; \
+		aws --region $$region s3 cp ./bin/$(GIT_HASH).zip s3://$(S3_BUCKET_PREFIX)-$$region/$(NAME)/; \
 		aws lambda publish-layer-version \
 			--layer-name "$(NAME)" \
 			--description "OpenTelemetry with otlp receiver and elastic exporter" \
 			--region $$region \
-			--content S3Bucket=$(S3_BUCKET)-$$region,S3Key=$(NAME)/$(GIT_HASH).zip \
+			--content S3Bucket=$(S3_BUCKET_PREFIX)-$$region,S3Key=$(NAME)/$(GIT_HASH).zip \
 			--compatible-runtimes nodejs10.x nodejs12.x python3.6 python3.7 python3.8 ruby2.5 ruby2.7 java8 java8.al2 java11 dotnetcore3.1 provided.al2 \
 			--no-cli-pager \
 			--output text ; \
