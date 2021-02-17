@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/component/componenterror"
 	"go.opentelemetry.io/collector/exporter/loggingexporter"
+	"go.opentelemetry.io/collector/processor/batchprocessor"
 	"go.opentelemetry.io/collector/receiver/otlpreceiver"
 	"os"
 	"os/signal"
@@ -47,7 +48,9 @@ func components() (component.Factories, error) {
 		errs = append(errs, err)
 	}
 
-	processors, err := component.MakeProcessorFactoryMap()
+	processors, err := component.MakeProcessorFactoryMap(
+		batchprocessor.NewFactory(),
+	)
 	if err != nil {
 		errs = append(errs, err)
 	}
