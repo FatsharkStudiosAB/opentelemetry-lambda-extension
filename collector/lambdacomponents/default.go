@@ -15,11 +15,10 @@
 package lambdacomponents
 
 import (
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/elasticexporter"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer/consumererror"
 	"go.opentelemetry.io/collector/exporter/loggingexporter"
-	"go.opentelemetry.io/collector/exporter/otlpexporter"
-	"go.opentelemetry.io/collector/exporter/otlphttpexporter"
 	"go.opentelemetry.io/collector/receiver/otlpreceiver"
 )
 
@@ -35,8 +34,7 @@ func Components() (component.Factories, error) {
 
 	exporters, err := component.MakeExporterFactoryMap(
 		loggingexporter.NewFactory(),
-		otlpexporter.NewFactory(),
-		otlphttpexporter.NewFactory(),
+		elasticexporter.NewFactory(),
 	)
 	if err != nil {
 		errs = append(errs, err)
